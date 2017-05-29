@@ -18,12 +18,14 @@ $(document).ready(function () {
 //EVENTS//
 function Events() {
 
-    var btnChat = document.getElementById("btnChat")
-    var btnImagen = document.getElementById("btnImagen")
+    let btnChat = document.getElementById("btnChat");
+    let btnImagen = document.getElementById("btnImagen");
+    let btnEvent =document.getElementById("btnEvent");
 
 
     btnChat.addEventListener("click", publishText);
     btnImagen.addEventListener('click', publishImage);
+    btnEvent.addEventListener("click", publishEvent);
 }
 
 
@@ -48,17 +50,64 @@ function publishText(container) {
 //ADD IMAGE//
 
 function publishImage(container) {
-	if (container !== undefined && container !== null) {
-		let card = new Card('image');
-		card.addTitle();
-		let inputFile = document.getElementById('image-file')
-		loadFiles(inputFile, card.content);
-		container.appendChild(card.content);
-		cleanModal('modalImages');
-		return true;
-	}
-	return false;
+    if (container !== undefined && container !== null) {
+        let card = new Card('image');
+        card.addTitle();
+        let inputFile = document.getElementById('image-file')
+        loadFiles(inputFile, card.content);
+        container.appendChild(card.content);
+        cleanModal('modalImages');
+        return true;
+    }
+    return false;
 }
+
+//EVENT//
+
+function publishEvent(container) {
+    if (container !== undefined && container !== null) {
+        return false;
+    }
+    // let date = document.getElementById('modal-event-date').value;
+    let card = new Card('event');
+    card.addTitle();
+    let id = card.title.trim().split(' ')[0];
+    card.addField('date', 'P', 'flow-text');
+
+    let mapContainer = document.createElement('DIV');
+    mapContainer.classList.add('s12', 'map-container');
+    mapContainer.id = 'map-' + id;
+
+    card.content.appendChild(mapContainer);
+    container.appendChild(card.content);
+    createMap(id);
+    cleanModal('modalEvent');
+    return true;
+}
+
+
+
+
+//ADD MAP//
+function createMap(id) {
+    navigator.geolocation.getCurrentPosition(initMap);
+
+    function initMap(position) {
+        var currentlocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+        };
+        var map = new google.maps.Map(document.getElementById('map-' + id), {
+            zoom: 16,
+            center: currentlocation
+        });
+        var marker = new google.maps.Marker({
+            position: currentlocation,
+            map: map
+        });
+    }
+}
+
 
 
 //CHOOSE PUBLICATION
@@ -132,41 +181,41 @@ function Card(type) {
 
 //LOAD FILES//
 function loadFiles(inputFile, container) {
-	if (inputFile.files.length > 0) {
-		var archivo = inputFile.files[0];
-		var lector = new FileReader();
-		switch (archivo.type) {
-		case 'image/png':
-		case 'image/jpeg':
-		case 'image/gif':
-			lector.readAsDataURL(archivo);
-			lector.onload = readImage;
-			break;
-		case 'text/plain':
-			lector.readAsText(archivo, 'UTF-8');
-			lector.onload = readText;
-			break;
-		case 'audio/*':
-			lector.readAsArrayBuffer(archivo);
-			lector.onload = readAudio;
-			break;
-		case 'video/mpeg':
-		case 'video/mp4':
-		case 'video/quicktime':
-			lector.readAsArrayBuffer(archivo);
-			lector.onload = readVideo;
-			break;
-		default:
-			break;
-		}
-        
-        
-        function readImage(evento) {
-		var image = new Image();
-		image.src = evento.target.result;
-		image.classList.add('image-responsive', 'col', 's12');
-		container.appendChild(image);
+    if (inputFile.files.length > 0) {
+        var archivo = inputFile.files[0];
+        var lector = new FileReader();
+        switch (archivo.type) {
+            case 'image/png':
+            case 'image/jpeg':
+            case 'image/gif':
+                lector.readAsDataURL(archivo);
+                lector.onload = readImage;
+                break;
+            case 'text/plain':
+                lector.readAsText(archivo, 'UTF-8');
+                lector.onload = readText;
+                break;
+            case 'audio/*':
+                lector.readAsArrayBuffer(archivo);
+                lector.onload = readAudio;
+                break;
+            case 'video/mpeg':
+            case 'video/mp4':
+            case 'video/quicktime':
+                lector.readAsArrayBuffer(archivo);
+                lector.onload = readVideo;
+                break;
+            default:
+                break;
+        }
 
-}
-}
+
+        function readImage(evento) {
+            var image = new Image();
+            image.src = evento.target.result;
+            image.classList.add('image-responsive', 'col', 's12');
+            container.appendChild(image);
+
+        }
+    }
 };
